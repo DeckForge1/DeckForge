@@ -17,7 +17,7 @@ DeckForge is a Steam Deck desktop optimizer built with PySide6.
 - pip install PySide6 openrgb-python pillow numpy --break-system-packages
 
 ## Install
-git clone https://github.com/YOURUSERNAME/DeckForge
+git clone https://github.com/DeckForge1/DeckForge
 cd DeckForge
 python3 main.py
 
