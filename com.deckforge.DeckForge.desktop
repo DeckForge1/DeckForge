@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=DeckForge
+GenericName=Steam Deck Optimizer
+Comment=Performance tuning and RGB control for Steam Deck Desktop Mode
+Exec=python3 /home/deck/DeckForge/main.py
+Icon=deckforge
+Terminal=false
+Type=Application
+Categories=Utility;System;
+Keywords=rgb;performance;steamdeck;chromasync;
