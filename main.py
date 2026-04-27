@@ -405,8 +405,14 @@ class MainWindow(QMainWindow):
             row.addWidget(sl);row.addWidget(lv);cv.addLayout(row)
             return sl
         self.cs_boost=_slider("Boost",10,50,25,lambda v:f"{v/10:.1f}x")
+        self._cs_boost_val=2.5
+        self.cs_boost.valueChanged.connect(lambda v:setattr(self,"_cs_boost_val",v/10))
         self.cs_thresh=_slider("Threshold",1,30,5,lambda v:str(v))
+        self._cs_thresh_val=5
+        self.cs_thresh.valueChanged.connect(lambda v:setattr(self,"_cs_thresh_val",v))
         self.cs_bright=_slider("Brightness",10,100,100,lambda v:f"{v}%")
+        self._cs_bright_val=1.0
+        self.cs_bright.valueChanged.connect(lambda v:setattr(self,"_cs_bright_val",v/100))
         cv.addWidget(self._sep())
         self.cs_dev0=QCheckBox("Device 0 (Mouse)");self.cs_dev0.setChecked(True);cv.addWidget(self.cs_dev0)
         self.cs_dev1=QCheckBox("Device 1 (Keyboard)");self.cs_dev1.setChecked(True);cv.addWidget(self.cs_dev1)
@@ -440,11 +446,11 @@ class MainWindow(QMainWindow):
                 arr=np.frombuffer(raw,dtype=np.uint8).reshape(H,W,3)
                 r,g,b=int(arr[:,:,0].mean()),int(arr[:,:,1].mean()),int(arr[:,:,2].mean())
                 mx=max(r,g,b,1)
-                boost=self.cs_boost.value()/10
-                br=self.cs_bright.value()/100
+                boost=getattr(self,'_cs_boost_val',2.5)
+                br=getattr(self,'_cs_bright_val',1.0)
                 sc=min(255/mx,boost)
                 r,g,b=int(r*sc*br),int(g*sc*br),int(b*sc*br)
-                thresh=self.cs_thresh.value()
+                thresh=getattr(self,'_cs_thresh_val',5)
                 if math.sqrt(sum((cur[i]-[r,g,b][i])**2 for i in range(3)))>=thresh:
                     cur=[r,g,b]
                     _send(r,g,b)
