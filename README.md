@@ -27,3 +27,11 @@ python3 main.py
 
 ## License
 MIT
+
+## Quick Install (Steam Deck)
+
+Open Konsole in Desktop Mode and run:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/DeckForge1/DeckForge/main/install.sh | bash
+```
