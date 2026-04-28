@@ -431,10 +431,10 @@ class MainWindow(QMainWindow):
             return subprocess.Popen(cmd,stdout=subprocess.PIPE,stderr=subprocess.DEVNULL),W,H
         def _send(r,g,b):
             h=f"{r:02X}{g:02X}{b:02X}"
-            args=["flatpak","run","org.openrgb.OpenRGB"]
-            if self.cs_dev0.isChecked():args+=["--device","0","--color",h]
-            if self.cs_dev1.isChecked():args+=["--device","1","--color",h]
-            if len(args)>4:subprocess.Popen(args,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
+            if self.cs_dev0.isChecked():
+                subprocess.Popen(["flatpak","run","org.openrgb.OpenRGB","--device","0","--color",h],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
+            if self.cs_dev1.isChecked():
+                subprocess.Popen(["flatpak","run","org.openrgb.OpenRGB","--device","1","--color",h],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
         def _loop():
             import time,numpy as np
             cur=[128,128,128];frames=0;t0=time.time()
