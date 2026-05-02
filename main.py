@@ -113,6 +113,29 @@ class MainWindow(QMainWindow):
         self.setStyleSheet(LIGHT)
         self._switch_page(0)
         threading.Thread(target=_start_orgb_server,daemon=True).start()
+        self._setup_tray()
+
+    def _setup_tray(self):
+        # use system settings icon, fallback to color swatch
+        icon=QIcon.fromTheme("preferences-system")
+        if icon.isNull():
+            pm=QPixmap(32,32);pm.fill(QColor("#639922"))
+            icon=QIcon(pm)
+        self._tray=QSystemTrayIcon(icon,self)
+        self._tray.setToolTip("DeckForge")
+        menu=QMenu()
+        menu.addAction("Show",self.show)
+        menu.addAction("ChromaSync",lambda:self._switch_page(4))
+        menu.addSeparator()
+        menu.addAction("Quit",self._quit_app)
+        self._tray.setContextMenu(menu)
+        self._tray.activated.connect(lambda r:self.show() if r==QSystemTrayIcon.ActivationReason.Trigger else None)
+        self._tray.show()
+
+    def _quit_app(self):
+        self._cs_running=False
+        self._tray.hide()
+        QApplication.quit()
 
     def _build_ui(self):
         c=QWidget();self.setCentralWidget(c)
@@ -320,8 +343,32 @@ class MainWindow(QMainWindow):
         kcv.addWidget(self._apply_btn("Apply to keyboard",lambda:self._rgb_apply_device("keyboard")))
         v.addWidget(kcard)
         v.addWidget(self._apply_btn("Apply to all devices",self._apply_rgb))
+        bake_card=self._card();bcv=QVBoxLayout(bake_card);bcv.setContentsMargins(14,12,14,12);bcv.setSpacing(8)
+        bt=QLabel("Hardware Memory");bt.setObjectName("cardtitle");bcv.addWidget(bt)
+        bs=QLabel("Saves color directly to device — persists after app closes");bs.setObjectName("sub");bcv.addWidget(bs)
+        bcv.addWidget(self._apply_btn("Bake color to hardware",self._bake_to_hardware))
+        v.addWidget(bake_card)
         v.addStretch()
         return self._scroll_page(inner)
+
+    def _bake_to_hardware(self):
+        """Set Static mode + color so device remembers it without the app."""
+        try:
+            from openrgb import OpenRGBClient
+            from openrgb.utils import RGBColor
+            h=self.rgb_color.lstrip("#")
+            r,g,b=int(h[0:2],16),int(h[2:4],16),int(h[4:6],16)
+            cl=OpenRGBClient()
+            for d in cl.devices:
+                mode_map={m.name:i for i,m in enumerate(d.modes)}
+                if "Static" in mode_map:
+                    d.set_mode(mode_map["Static"])
+                for z in d.zones:
+                    try:z.set_color(RGBColor(r,g,b))
+                    except:pass
+            QMessageBox.information(self,"Baked","Color saved to hardware. Devices will keep this color even after DeckForge closes.")
+        except Exception as e:
+            QMessageBox.warning(self,"Error",str(e))
 
     def _open_color_picker(self):
         c=QColorDialog.getColor(QColor(f"#{self.rgb_color}"),self)
@@ -617,6 +664,11 @@ class MainWindow(QMainWindow):
         cv3.addWidget(QLabel("DeckForge v1.1"));cv3.addWidget(QLabel("Steam Deck Desktop Optimizer"))
         v.addWidget(card3);v.addStretch()
         return self._scroll_page(inner)
+
+    def closeEvent(self,e):
+        e.ignore()
+        self.hide()
+        self._tray.showMessage("DeckForge","Running in background. Right-click tray icon to quit.",QSystemTrayIcon.MessageIcon.Information,2000)
 
     def _set_theme(self,mode):
         self.dark=(mode=="Dark");self.setStyleSheet(DARK if self.dark else LIGHT)
