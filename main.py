@@ -145,7 +145,7 @@ class MainWindow(QMainWindow):
         logo=QLabel("  DeckForge");logo.setStyleSheet("font-size:15px;font-weight:bold;padding:8px 14px 16px;")
         sb.addWidget(logo)
         self.nav_buttons=[]
-        sections=[("SYSTEM",None),("Dashboard","◈"),("Performance","⚡"),("Processes","≡"),("RGB Control","●"),("ChromaSync","◎"),("Profiles","◧"),("CONFIG",None),("Settings","⚙")]
+        sections=[("SYSTEM",None),("Dashboard","◈"),("Performance","⚡"),("Processes","≡"),("RGB Control","●"),("ChromaSync","◎"),("Profiles","◧"),("APPS",None),("KeyScreen","⌨"),("CONFIG",None),("Settings","⚙")]
         page_idx=0
         for label,icon in sections:
             if icon is None:
@@ -165,6 +165,7 @@ class MainWindow(QMainWindow):
         self.stack.addWidget(self._page_rgb())
         self.stack.addWidget(self._page_chromasync())
         self.stack.addWidget(self._page_profiles())
+        self.stack.addWidget(self._page_keyscreen())
         self.stack.addWidget(self._page_settings())
         root.addWidget(self.stack)
         self.timer=QTimer();self.timer.timeout.connect(self._update_stats);self.timer.start(2000)
@@ -635,6 +636,21 @@ class MainWindow(QMainWindow):
                     pwd=self._get_sudo()
                     if pwd:
                         subprocess.Popen(["bash","-c",f"echo {pwd!r}|sudo -S cpupower frequency-set -g powersave"],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
+
+    def _page_keyscreen(self):
+        inner=QWidget();v=QVBoxLayout(inner);v.setContentsMargins(20,20,20,20);v.setSpacing(12)
+        t=QLabel("KeyScreen");t.setObjectName("title");v.addWidget(t)
+        s=QLabel("Project your screen onto your keyboard LEDs");s.setObjectName("sub");v.addWidget(s)
+        card=self._card();cv=QVBoxLayout(card);cv.setContentsMargins(14,12,14,12);cv.setSpacing(8)
+        ct=QLabel("Keyboard pixel display");ct.setObjectName("cardtitle");cv.addWidget(ct)
+        desc=QLabel("KeyScreen samples your screen and maps each pixel to a keyboard LED in real time.")
+        desc.setWordWrap(True);desc.setObjectName("sub");cv.addWidget(desc)
+        def _launch():
+            import subprocess as sp
+            sp.Popen(["python3","/home/deck/KeyScreen/keyscreen.py"])
+        cv.addWidget(self._apply_btn("Launch KeyScreen",_launch))
+        v.addWidget(card);v.addStretch()
+        return self._scroll_page(inner)
 
     def _page_settings(self):
         inner=QWidget();v=QVBoxLayout(inner);v.setContentsMargins(20,20,20,20);v.setSpacing(12)
